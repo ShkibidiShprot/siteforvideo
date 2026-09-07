@@ -131,6 +131,33 @@ export default function App() {
     return () => window.clearTimeout(timer);
   }, [playing, travelling, index, playMs, step]);
 
+  // Navigation handlers
+  const goToCard = useCallback((cardId: number) => {
+    const idx = layout.computedCards.findIndex((c) => c.id === cardId);
+    if (idx !== -1) {
+      setCurrentIndex(idx);
+      setViewMode('card');
+    }
+  }, [layout.computedCards]);
+
+  const nextCard = useCallback(() => {
+    setCurrentIndex((prev) => (prev + 1) % layout.computedCards.length);
+  }, [layout.computedCards.length]);
+
+  const prevCard = useCallback(() => {
+    setCurrentIndex((prev) => (prev - 1 + layout.computedCards.length) % layout.computedCards.length);
+  }, [layout.computedCards.length]);
+
+  const selectChapter = useCallback((chapterId: number) => {
+    const firstCardInCh = layout.computedCards.find((c) => c.chapterId === chapterId);
+    if (firstCardInCh) {
+      const idx = layout.computedCards.findIndex((c) => c.id === firstCardInCh.id);
+      if (idx !== -1) setCurrentIndex(idx);
+    }
+    setViewMode('chapter');
+  }, [layout.computedCards]);
+
+  // Autoplay loop
   useEffect(() => {
     const onVisibility = () => { if (document.hidden) setPlaying(false); };
     document.addEventListener('visibilitychange', onVisibility);
