@@ -1,8 +1,8 @@
 import { useEffect, useState, useMemo, useCallback, type CSSProperties } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Scan, Play, Pause, Eye, X } from 'lucide-react';
-import corkImg from './assets/cork-bg.jpg';
-import evidenceImg from './assets/evidence.jpg';
+import corkImg from './cork-bg.jpg';
+import evidenceImg from './evidence.jpg';
 
 /* ================= board geometry ================= */
 const BOARD_W = 2160;
