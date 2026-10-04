@@ -1,9 +1,13 @@
 import { cards, levels, type IcebergCard, type LevelId } from './iceberg.ts';
 
-export const CARD_W = 340;
-export const CARD_H = 250;
+export const CARD_W = 286;
+export const CARD_H = 210;
+export const CARD_SCALE = 0.84;
 export const BOARD_W = 6500;
-export const BOARD_H = 4320;
+// The source artwork is one 4:3 framed corkboard, so keep the world at the same ratio.
+export const BOARD_H = BOARD_W * 0.75;
+const ORIGINAL_LAYOUT_H = 4320;
+const BOARD_Y_SCALE = BOARD_H / ORIGINAL_LAYOUT_H;
 
 export interface Bounds { x: number; y: number; width: number; height: number }
 export interface BoardNote extends IcebergCard { x: number; y: number; rotation: number }
@@ -14,8 +18,8 @@ export interface Viewport { width: number; height: number }
 export interface ManualCamera { x: number; y: number; zoom: number }
 export const REST_CAMERA: ManualCamera = { x: 0, y: 0, zoom: 1 };
 
-// A wide investigation wall: the prologue is in the middle, chapters wind
-// clockwise around it. These are loose territories, not visible grid cells.
+// One framed 4:3 investigation board: the prologue is near the middle, chapters
+// wind clockwise around it. Territories guide placement but are not drawn as cells.
 const territories: readonly Bounds[] = [
   { x: 2700, y: 1650, width: 1260, height: 640 },
   { x: 180, y: 320, width: 1830, height: 1620 },
@@ -24,7 +28,11 @@ const territories: readonly Bounds[] = [
   { x: 4360, y: 2340, width: 1990, height: 1720 },
   { x: 2220, y: 2500, width: 1930, height: 1600 },
   { x: 220, y: 2420, width: 1780, height: 1460 },
-];
+].map((bounds) => ({
+  ...bounds,
+  y: Math.round(bounds.y * BOARD_Y_SCALE),
+  height: Math.round(bounds.height * BOARD_Y_SCALE),
+}));
 const rowsByLevel = [[1], [3, 2, 3], [3, 3, 2], [4, 3, 4, 3], [4, 3, 4], [3, 4, 4], [2, 1, 2]];
 
 function random(seed: number) {
@@ -42,7 +50,7 @@ export const boardLevels: readonly BoardLevel[] = levels.map((level) => {
   const rowSizes = rowsByLevel[level.id];
   const maxColumns = Math.max(...rowSizes);
   const nextRandom = random(7301 + level.id * 419);
-  const fullSpan = bounds.width - 260 - CARD_W;
+  const fullSpan = bounds.width - 224 - CARD_W;
   const pitchX = maxColumns > 1 ? fullSpan / (maxColumns - 1) : 0;
   const firstY = bounds.y + 220 + 80;
   const lastY = bounds.y + bounds.height - CARD_H - 80;
@@ -50,28 +58,29 @@ export const boardLevels: readonly BoardLevel[] = levels.map((level) => {
   let index = 0;
   const notes = rowSizes.flatMap((count, row) => {
     const span = maxColumns > 1 ? pitchX * (count - 1) : 0;
-    const rowOffset = (nextRandom() - 0.5) * 24;
+    const rowOffset = (nextRandom() - 0.5) * 42;
     return Array.from({ length: count }, (_, columnIndex) => {
       const card = level.cards[index++];
       const column = row % 2 === 0 ? columnIndex : count - 1 - columnIndex;
-      const jitterX = Math.max(0, Math.min(65, (pitchX - 400) / 2));
-      const jitterY = Math.max(0, Math.min(65, (pitchY - 310) / 2 - 8));
+      const jitterX = Math.max(0, Math.min(135, (pitchX - CARD_W - 84) / 2));
+      const jitterY = Math.max(0, Math.min(130, (pitchY - CARD_H - 70) / 2));
+      const edgeRow = row === 0 || row === rowSizes.length - 1;
       return {
         ...card,
         x: Math.round(bounds.x + bounds.width / 2 - span / 2 + column * pitchX + rowOffset + (nextRandom() * 2 - 1) * jitterX),
-        y: Math.round((rowSizes.length === 1 ? (firstY + lastY) / 2 : firstY + row * pitchY) + (nextRandom() * 2 - 1) * Math.min(jitterY, row === 0 || row === rowSizes.length - 1 ? 40 : 65)),
+        y: Math.round((rowSizes.length === 1 ? (firstY + lastY) / 2 : firstY + row * pitchY) + (nextRandom() * 2 - 1) * Math.min(jitterY, edgeRow ? 75 : 130)),
         rotation: Math.round((2.2 + nextRandom() * 6.4) * (card.id % 2 ? -1 : 1) * 10) / 10,
       };
     });
   });
-  // Relax the safe starting anchors into a stable, hand-pinned scatter. Every
-  // proposed move is collision-checked, so the irregularity never hides text.
-  for (let pass = 0; pass < 3; pass++) for (const note of notes) {
-    for (let attempt = 0; attempt < 10; attempt++) {
-      const candidate = { ...note, x: note.x + Math.round((nextRandom() * 2 - 1) * 115), y: note.y + Math.round((nextRandom() * 2 - 1) * 130) };
+  // Relax the anchors into a broad, stable hand-pinned scatter. Every proposed
+  // move is collision-checked, so the extra irregularity never hides text.
+  for (let pass = 0; pass < 4; pass++) for (const note of notes) {
+    for (let attempt = 0; attempt < 14; attempt++) {
+      const candidate = { ...note, x: note.x + Math.round((nextRandom() * 2 - 1) * 190), y: note.y + Math.round((nextRandom() * 2 - 1) * 210) };
       const box = noteBounds(candidate);
-      if (box.x < bounds.x + 38 || box.y < bounds.y + 275 || box.x + box.width > bounds.x + bounds.width - 38 || box.y + box.height > bounds.y + bounds.height - 38) continue;
-      const clearance = { x: box.x - 18, y: box.y - 18, width: box.width + 36, height: box.height + 36 };
+      if (box.x < bounds.x + 28 || box.y < bounds.y + 245 || box.x + box.width > bounds.x + bounds.width - 28 || box.y + box.height > bounds.y + bounds.height - 32) continue;
+      const clearance = { x: box.x - 27, y: box.y - 27, width: box.width + 54, height: box.height + 54 };
       if (notes.some((other) => other.id !== note.id && intersects(clearance, noteBounds(other)))) continue;
       note.x = candidate.x; note.y = candidate.y;
       break;

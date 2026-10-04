@@ -23,14 +23,12 @@ export interface UseStageGestureOptions {
   baseCamera: Camera;
   size: Viewport;
   renderedCameraRef: RefObject<Camera | null>;
-  onStopAutoplay: () => void;
 }
 
 export function useStageGesture({
   baseCamera,
   size,
   renderedCameraRef,
-  onStopAutoplay,
 }: UseStageGestureOptions) {
   const [manual, setManual] = useState<ManualCamera>(REST_CAMERA);
   const [dragging, setDragging] = useState(false);
@@ -51,7 +49,6 @@ export function useStageGesture({
 
   const zoom = useCallback(
     (factor: number) => {
-      onStopAutoplay();
       setManual((current) =>
         zoomCamera(
           baseCamera,
@@ -63,14 +60,13 @@ export function useStageGesture({
         )
       );
     },
-    [baseCamera, size, renderedCameraRef, onStopAutoplay]
+    [baseCamera, size, renderedCameraRef]
   );
 
   const startDrag = (event: ReactPointerEvent<HTMLElement>) => {
     if (event.button !== 0) return;
     const target = event.target;
     if (target instanceof Element && target.closest('button, a, input, select, textarea, [data-board-ui]')) return;
-    onStopAutoplay();
     const live = renderedCameraRef.current
       ? manualFromCamera(baseCamera, renderedCameraRef.current, size)
       : manual;

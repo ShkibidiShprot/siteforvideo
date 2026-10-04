@@ -1,5 +1,5 @@
 import { memo, type CSSProperties } from 'react';
-import type { BoardNote } from '../../domain/board-layout.ts';
+import { CARD_SCALE, type BoardNote } from '../../domain/board-layout.ts';
 import { levels, numberLabel } from '../../domain/iceberg.ts';
 import { PaperPin } from './PaperPin.tsx';
 import { PaperDoodle } from './PaperDoodle.tsx';
@@ -29,8 +29,9 @@ export const PaperCard = memo(function PaperCard({
   straighten,
   onSelect,
 }: PaperCardProps) {
-  const mini = scale < 0.36;
-  const tiny = scale < 0.095;
+  const paperScale = scale * CARD_SCALE;
+  const mini = paperScale < 0.36;
+  const tiny = paperScale < 0.095;
 
   return (
     <button
@@ -41,7 +42,7 @@ export const PaperCard = memo(function PaperCard({
         top: y,
         width,
         height,
-        '--note-scale': scale,
+        '--note-scale': paperScale,
         '--rotation': `${straighten ? 0 : note.rotation}deg`,
       } as CSSProperties}
       onClick={() => onSelect(note.id)}

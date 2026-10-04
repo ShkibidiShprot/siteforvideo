@@ -25,8 +25,13 @@ test('all seven chapter headings and ranges match the revised plan exactly', () 
   assert.equal(searchCards('рівень 5').length, 11, 'old level terminology remains searchable');
 });
 
-test('the scattered wall is wide, spatially varied and deterministic across module loads', async () => {
-  assert.ok(BOARD_W / BOARD_H > 1.4 && BOARD_W / BOARD_H < 1.8);
+test('the single-board layout is spatially varied, broadly scattered and deterministic', async () => {
+  assert.ok(Math.abs(BOARD_W / BOARD_H - 4 / 3) < 0.001, 'the world matches the single framed board artwork');
+  assert.ok(CARD_W < 300 && CARD_H < 220, 'paper notes are smaller while remaining readable');
+  assert.ok(Math.min(...boardNotes.map((note) => note.x)) < 600);
+  assert.ok(Math.max(...boardNotes.map((note) => note.x)) > BOARD_W - 600);
+  assert.ok(Math.min(...boardNotes.map((note) => note.y)) < 600);
+  assert.ok(Math.max(...boardNotes.map((note) => note.y)) > BOARD_H - 600);
   assert.ok(new Set(boardNotes.map((note) => note.x)).size > 50);
   assert.ok(new Set(boardNotes.map((note) => note.y)).size > 50);
   assert.ok(boardNotes.some((note) => note.rotation > 5));
@@ -73,7 +78,7 @@ test('flights begin and finish exactly at the requested cameras, with bounded du
     assert.deepEqual(sampleFlight(flight, 1), fit(to));
     assert.deepEqual(sampleFlight(flight, -1), fit(from));
     assert.deepEqual(sampleFlight(flight, 3), fit(to));
-    assert.ok(flight.duration >= 1150 && flight.duration <= 2200);
+    assert.ok(flight.duration >= 750 && flight.duration <= 1450);
     assert.ok(sampleFlight(flight, 0.45).scale < Math.min(flight.from.scale, flight.to.scale));
   }
 });
@@ -92,7 +97,17 @@ test('pull-back, travel and approach are continuous and never overshoot the dest
     assert.ok(pan >= previousPan - 0.000001 && pan <= 1.000001);
     previousPan = pan;
   }
-  for (const boundary of [0.28, 0.67]) {
+  const panAt = (progress) => {
+    const camera = sampleFlight(flight, progress);
+    const cx = (viewport.width / 2 - camera.x) / camera.scale;
+    const cy = (viewport.height / 2 - camera.y) / camera.scale;
+    return ((cx - flight.fromCenter.x) * dx + (cy - flight.fromCenter.y) * dy) / (dx * dx + dy * dy);
+  };
+  const earlyPan = panAt(0.15);
+  assert.ok(earlyPan > 0.045 && earlyPan < 0.15, 'the camera starts moving during pull-back, but eases in');
+  close(panAt(0.5), 0.5, 0.00001);
+  assert.ok(panAt(0.85) > 0.85, 'the camera eases out before stopping');
+  for (const boundary of [0.24, 0.62]) {
     const before = sampleFlight(flight, boundary - 0.000001);
     const after = sampleFlight(flight, boundary + 0.000001);
     close(before.x, after.x, 0.1); close(before.y, after.y, 0.1); close(before.scale, after.scale, 0.001);
@@ -119,9 +134,9 @@ test('manual hand-off during a flight preserves the exact displayed camera', () 
   }
 });
 
-test('framing a chapter or the whole wall uses a direct, smooth zoom', () => {
+test('framing a chapter or the whole board uses a direct, smooth zoom', () => {
   const flight = createFlight(fit(0), fit(0, 'all'), viewport, 'frame');
-  assert.equal(flight.duration, 800);
+  assert.equal(flight.duration, 600);
   let previous = flight.from.scale;
   for (let i = 0; i <= 100; i++) {
     const camera = sampleFlight(flight, i / 100);

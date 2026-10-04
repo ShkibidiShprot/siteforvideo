@@ -34,9 +34,9 @@ button svg { flex-shrink: 0; }
 
 .app-shell {
   display: grid;
-  grid-template-columns: 248px minmax(0, 1fr);
-  grid-template-rows: 76px minmax(0, 1fr) 107px;
-  grid-template-areas: 'header header' 'sidebar stage' 'sidebar controls';
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) 90px;
+  grid-template-areas: 'stage' 'controls';
   height: 100%;
   height: 100dvh;
   overflow: hidden;
@@ -93,11 +93,12 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
 
 /* Screen-space scene: only vectors/background move as a world. Text is never
    rasterized into a giant scaled layer, even at 280% zoom. */
-.stage { grid-area: stage; position: relative; min-height: 0; min-width: 0; overflow: hidden; touch-action: none; user-select: none; isolation: isolate; cursor: grab; background: #49341f; }
+.stage { grid-area: stage; position: relative; min-height: 0; min-width: 0; overflow: hidden; touch-action: none; user-select: none; isolation: isolate; cursor: grab; background: radial-gradient(ellipse at 50% 45%, #443523 0%, #292219 72%, #181714 100%); }
 .stage:focus-visible { outline-offset: -4px; }
 .stage.is-dragging, .stage.is-dragging * { cursor: grabbing !important; }
 .board-scene { position: absolute; inset: 0; overflow: hidden; contain: layout paint; }
-.board-surface { position: absolute; inset: 0; background-color: #715333; background-image: var(--cork-image); background-repeat: repeat; opacity: 0.92; pointer-events: none; }
+.board-surface { position: absolute; background-color: #715333; background-image: var(--cork-image); background-repeat: no-repeat; background-position: center; background-size: 100% 100%; box-shadow: 0 22px 65px #080604a8, 0 4px 14px #08060480; pointer-events: none; }
+.board-cork-detail { position: absolute; left: 3.2%; top: 4.2%; width: 93.6%; height: 91.4%; background-image: var(--cork-texture); background-repeat: repeat; background-position: center; mix-blend-mode: soft-light; pointer-events: none; }
 .board-threads { position: absolute; left: 0; top: 0; pointer-events: none; z-index: 1; overflow: hidden; }
 .active-marker { position: absolute; z-index: 2; pointer-events: none; overflow: visible; }
 .marker-moving { opacity: 0.3; }
@@ -280,7 +281,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .control-row { gap: 7px; }
 }
 @media (max-width: 800px) {
-  .app-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: 65px 64px minmax(0, 1fr) calc(120px + env(safe-area-inset-bottom)); grid-template-areas: 'header' 'sidebar' 'stage' 'controls'; }
+  .app-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) calc(104px + env(safe-area-inset-bottom)); grid-template-areas: 'stage' 'controls'; }
   .topbar { padding: 0 18px; gap: 18px; }
   .brand { gap: 9px; }
   .brand > svg { width: 28px; }
@@ -314,7 +315,6 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .control-footnote { display: none; }
   .stage-caption { top: 16px; left: 18px; }
   .stage-caption span:not(.caption-dot) { font-size: 10px; }
-  .transition-button { display: none; }
   .stage-caption strong { font-size: 9px; }
   .zoom-controls { right: 12px; top: 13px; }
   .zoom-controls .icon-button { height: 28px; width: 28px; }
@@ -365,7 +365,7 @@ kbd { display: inline-flex; align-items: center; justify-content: center; font-f
   .topbar-actions { gap: 6px; }
 }
 @media (max-height: 500px) and (max-width: 950px) {
-  .app-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: 50px minmax(0, 1fr) 68px; grid-template-areas: 'header' 'stage' 'controls'; }
+  .app-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) 76px; grid-template-areas: 'stage' 'controls'; }
   .sidebar { display: none; }
   .project-label { display: none; }
   .controls { padding: 0 15px 8px; }
