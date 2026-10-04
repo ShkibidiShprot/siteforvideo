@@ -130,16 +130,28 @@ JavaScript, CSS, зображення та шрифти у `index.html`. Caveat 
 
 ---
 
-## 🕹️ Керування та гарячі клавіші
+## 🚀 GitHub Pages
 
-1. У **Settings → Pages → Build and deployment → Source** має бути вибрано
-   **GitHub Actions**. Для цього репозиторію цей режим уже ввімкнено.
-2. Злий зміни з workflow у `main`. Кожен наступний push або злиття pull request
-   у `main` автоматично встановлює залежності через `npm ci`, запускає `npm test`,
-   перевіряє TypeScript, збирає сайт і публікує вміст `dist/` на GitHub Pages.
-3. Прогрес і результат доступні у вкладці
-   [Actions](https://github.com/ShkibidiShprot/siteforvideo/actions).
-   Після завершення кроку **Deploy** сайт буде доступний за адресою вище.
+Pull request до `main` перевіряє тести й production-збірку. Push або злиття в
+`main` додатково запускає публікацію `dist/` на GitHub Pages.
+
+Перед першим розгортанням відкрий [Settings → Pages](https://github.com/ShkibidiShprot/siteforvideo/settings/pages)
+і в **Build and deployment → Source** вибери **GitHub Actions**. GitHub Actions
+не може створити Pages-сайт за допомогою стандартного `GITHUB_TOKEN`, тому це
+налаштування потрібно ввімкнути в репозиторії вручну. Workflow тепер перевіряє
+це заздалегідь і показує пряме посилання на налаштування, якщо сайт не ввімкнений
+або вибране інше джерело.
+
+Цей репозиторій зараз приватний. GitHub Free підтримує Pages лише з публічних
+репозиторіїв; використання приватного репозиторію як джерела Pages потребує
+відповідного платного плану. Якщо налаштування Pages недоступне, перевір
+[обмеження тарифів GitHub Pages](https://docs.github.com/en/pages/getting-started-with-github-pages/what-is-github-pages#who-can-use-this-feature).
+Зробити репозиторій публічним варто лише якщо можна відкрити його код і історію
+всім. Сам опублікований сайт також є публічним — не додавай до збірки секрети.
+
+Після налаштування перевір прогрес і результат у вкладці
+[Actions](https://github.com/ShkibidiShprot/siteforvideo/actions). Успішний крок
+**Deploy** опублікує сайт за адресою вище.
 
 ---
 

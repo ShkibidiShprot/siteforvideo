@@ -60,6 +60,37 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
+      - name: Verify GitHub Pages configuration
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          response_file="${RUNNER_TEMP}/pages-site.json"
+          status="$(curl --silent --show-error \
+            --output "${response_file}" \
+            --write-out '%{http_code}' \
+            --header "Accept: application/vnd.github+json" \
+            --header "Authorization: Bearer ${GH_TOKEN}" \
+            --header "X-GitHub-Api-Version: 2022-11-28" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pages")"
+
+          if [[ "${status}" == "404" ]]; then
+            echo "::error title=GitHub Pages is not enabled::Open https://github.com/${GITHUB_REPOSITORY}/settings/pages and set Build and deployment → Source to GitHub Actions. Pages must be enabled in repository settings; the default GITHUB_TOKEN cannot create a Pages site. Since this repository is private, the account plan must support Pages from private repositories."
+            exit 1
+          fi
+
+          if [[ "${status}" != "200" ]]; then
+            echo "::error title=Cannot read GitHub Pages configuration::The Pages API returned HTTP ${status}. Check the deploy job's Pages permissions."
+            exit 1
+          fi
+
+          build_type="$(jq -r '.build_type // empty' "${response_file}")"
+          if [[ "${build_type}" != "workflow" ]]; then
+            echo "::error title=GitHub Pages is not configured for Actions::Open https://github.com/${GITHUB_REPOSITORY}/settings/pages and set Build and deployment → Source to GitHub Actions."
+            exit 1
+          fi
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v6
 
