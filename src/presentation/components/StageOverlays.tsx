@@ -1,4 +1,4 @@
-import { memo, type CSSProperties, type RefObject } from 'react';
+import { memo, type RefObject } from 'react';
 import { ZoomIn, ZoomOut, Scan } from 'lucide-react';
 import { chapterRange, numberLabel, type IcebergCard, type LevelInfo } from '../../domain/iceberg.ts';
 import type { ViewMode } from '../../domain/board-layout.ts';
@@ -11,8 +11,6 @@ export interface StageOverlaysProps {
   zoomOutputRef: RefObject<HTMLOutputElement | null>;
   travelling: boolean;
   freeCamera: boolean;
-  playing: boolean;
-  playMs: number;
   onZoom: (factor: number) => void;
   onResetManual: () => void;
 }
@@ -25,26 +23,22 @@ export const StageOverlays = memo(function StageOverlays({
   zoomOutputRef,
   travelling,
   freeCamera,
-  playing,
-  playMs,
   onZoom,
   onResetManual,
 }: StageOverlaysProps) {
-  const headingText = view === 'all' ? 'Загальний огляд' : chapter.heading;
+  const headingText = view === 'all' ? 'Уся дошка' : chapter.heading;
   const subText =
     view === 'all'
-      ? 'Усі нитки на одній дошці'
+      ? `Усі картки · 01–${numberLabel(totalCards)}`
       : view === 'level'
       ? `Картки ${chapterRange(chapter.id)}`
-      : `Картка ${numberLabel(activeCard.id)} з ${totalCards}`;
+      : `Картка ${numberLabel(activeCard.id)} з ${totalCards} · ${activeCard.title}`;
 
   const hintText = travelling
-    ? 'Від’їзд · переліт · наближення'
+    ? 'Камера плавно перелітає до наступної картки'
     : freeCamera
     ? 'Вільний огляд · перетягуй дошку'
-    : view === 'card'
-    ? 'Натисни картку, щоб відкрити начитку'
-    : 'Натисни картку, щоб наблизити';
+    : 'Клік по записці — переліт до картки';
 
   return (
     <>
@@ -92,17 +86,8 @@ export const StageOverlays = memo(function StageOverlays({
 
       <p className="stage-hint">
         {hintText}
-        <span>Коліщатко — масштаб</span>
+        <span>← → картки · колесо — масштаб</span>
       </p>
-
-      {playing && !travelling && (
-        <div
-          className="playback-progress"
-          key={`${activeCard.id}-${playMs}`}
-          style={{ '--play-duration': `${playMs}ms` } as CSSProperties}
-          aria-hidden="true"
-        />
-      )}
     </>
   );
 });

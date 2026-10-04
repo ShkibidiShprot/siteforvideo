@@ -2,6 +2,8 @@ import { memo, useLayoutEffect, type RefObject } from 'react';
 import {
   boardLevels,
   boardNotes,
+  BOARD_H,
+  BOARD_W,
   intersects,
   projectNote,
   threads,
@@ -73,11 +75,21 @@ export const BoardScene = memo(function BoardScene({
       <div
         className="board-surface"
         style={{
-          backgroundPosition: `${snap(camera.x)}px ${snap(camera.y)}px`,
-          backgroundSize: `${980 * scale}px`,
+          left: snap(camera.x),
+          top: snap(camera.y),
+          width: snap(BOARD_W * scale),
+          height: snap(BOARD_H * scale),
         }}
         aria-hidden="true"
-      />
+      >
+        <div
+          className="board-cork-detail"
+          style={{
+            backgroundSize: `${980 * scale}px`,
+            opacity: Math.min(0.58, scale * 0.36),
+          }}
+        />
+      </div>
 
       <BoardThreads
         viewportWidth={viewport.width}
